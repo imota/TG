@@ -5,8 +5,7 @@
 
 adaptorname = 'winvideo';
 
-obj = videoinput(adaptorname);
+obj = videoinput(adaptorname, 1, 'I420_640x480');
 preview(obj);
-
-frame = getsnapshot(obj);
-image(frame);
+%frame = getsnapshot(obj);
+%image(frame);
