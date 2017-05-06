@@ -1,8 +1,8 @@
-s=serial('COM6','BaudRate',115200);
+s=serial('COM6','BaudRate',9600);
 fopen(s);
-writedata=uint16(500); %0x01F4
-for i=1:10000
-   fwrite(s,writedata,'uint16') %write datac
+writedata=uint16(8);
+for i=2:19
+    fwrite(s,i,'int8');
 end
  fclose(s);
  delete(s);
