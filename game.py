@@ -11,7 +11,6 @@ class Game(object):
         rospy.init_node('environment_node', anonymous=True)
         self.observation_pub = rospy.Publisher('observations_topic', String, queue_size=1)
         self.rate = rospy.Rate(10)
-        pass
 
     def prepare_environment(self, environment_name):
         self.name = environment_name
