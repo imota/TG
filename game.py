@@ -38,7 +38,7 @@ class Game(object):
         self.rate.sleep()
 
     def publish_observation(self):
-        self.observation_pub.publish("it works")
+        self.observation_pub.publish(np.array2string(self.observation))
 
     def publish_reward(self):
         pass
