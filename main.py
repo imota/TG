@@ -6,7 +6,7 @@ from std_msgs.msg import String
 
 
 if __name__ == '__main__':
-    game = environments.Enduro()
+    game = environments.get_game()
 
     for i_episode in range(20):
         game.reset()
