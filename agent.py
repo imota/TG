@@ -15,13 +15,16 @@ class Policy(object):
 class Agent(object):
 
     def __init__(self):
+        self.init_ROS()
+
+    def init_ROS(self):
         rospy.init_node('agent_node', anonymous=True)
         self.action_pub = rospy.Publisher('actions_topic', UInt8, queue_size=1)
-        rospy.Subscriber('observations_topic', String, self.callback)
+        rospy.Subscriber('observations_topic', String, self.select_action)
         self.rate = rospy.Rate(GAME_CONFIG['game_rate'])
         rospy.spin()
 
-    def callback(self, data):
+    def select_action(self, observation):
         self.action_pub.publish(random.randint(0, GAME_CONFIG['action_space']))
 
 if __name__ == '__main__':
