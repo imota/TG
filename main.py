@@ -1,26 +1,13 @@
 #!/usr/bin/env python
 
-import game
+import environments
 import rospy
 from std_msgs.msg import String
 
-class Policy(object):
-    def __init__(self, action_space):
-        self.action_space = action_space
-
-class Agent(object):
-    def __init__(self, game):
-        self.game = game
-        #rospy.init_node('agent', anonymous=True)
-        rospy.Subscriber('observations_topic', String, self.callback)
-
-    def callback(self, data):
-        print data
-
 
 if __name__ == '__main__':
-    game = game.Enduro()
-    agent = Agent(game)
+    game = environments.Enduro()
+
     for i_episode in range(20):
         game.reset()
         for t in range(1000):
