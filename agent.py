@@ -11,10 +11,14 @@ class Policy(object):
     def __init__(self, action_space):
         self.action_space = action_space
 
+    def get_action(self, state):
+        return random.choice(self.action_space)
+
 
 class Agent(object):
 
     def __init__(self):
+        self.pi = Policy(GAME_CONFIG['action_space'])
         self.init_ROS()
 
     def init_ROS(self):
@@ -25,7 +29,7 @@ class Agent(object):
         rospy.spin()
 
     def select_action(self, observation):
-        self.action_pub.publish(random.randint(0, GAME_CONFIG['action_space']))
+        self.action_pub.publish(self.pi.get_action(observation))
 
 if __name__ == '__main__':
     agent = Agent()

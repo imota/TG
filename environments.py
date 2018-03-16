@@ -17,15 +17,18 @@ def get_game():
 class Game(object):
 
     def start(self):
-        init_ROS()
+        self.init_ROS()
         self.action = 0
 
     def init_ROS(self):
         rospy.init_node('environment_node', anonymous=True)
         self.observation_pub = rospy.Publisher(
             'observations_topic', String, queue_size=1)
-        rospy.Subscriber('actions_topic', UInt8, self.save_action_callback)
+        self.init_actuator()
         self.rate = rospy.Rate(GAME_CONFIG['game_rate'])
+
+    def init_actuator(self):
+        rospy.Subscriber('actions_topic', UInt8, self.save_action_callback)
 
     def prepare_environment(self, environment_name):
         self.name = environment_name
@@ -42,7 +45,6 @@ class Game(object):
     def run(self):
         self.env.render()
         observation, reward, done, info = self.env.step(self.action)
-        self.action = 0
 
         self.observation = observation
         self.isDone = done
