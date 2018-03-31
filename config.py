@@ -4,15 +4,20 @@ from enum import Enum
 class Games(Enum):
     ENDURO = 0
     MS_PACMAN = 1
+    CART_POLE = 2
 
-game = Games.ENDURO
+game = Games.CART_POLE
 
 action_spaces = {
-    Games.ENDURO: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    Games.ENDURO: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    Games.MS_PACMAN: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    Games.CART_POLE: [0, 1]
 }
 
 names = {
-    Games.ENDURO: 'Enduro-v0'
+    Games.ENDURO: 'Enduro-v0',
+    Games.MS_PACMAN: 'MsPacman-v0',
+    Games.CART_POLE: 'CartPole-v0'
 }
 
 GAME_CONFIG = {

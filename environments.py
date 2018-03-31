@@ -64,15 +64,16 @@ class Enduro(Game):
 class MsPacman(Game):
 
     def start(self):
-        super(Game, self).start()
+        Game.start(self)
         self.prepare_environment('MsPacman-v0')
 
 
 class CartPole(Game):
 
     def start(self):
-        super(Game, self).start()
+        Game.start(self)
         self.prepare_environment('CartPole-v0')
+        print self.env.action_space
 
 games = {
     'Enduro-v0': Enduro(),
