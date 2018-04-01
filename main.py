@@ -8,9 +8,7 @@ from std_msgs.msg import String
 if __name__ == '__main__':
     game = environments.get_game()
 
-    for i_episode in range(20):
+    for i_episode in range(100):
         game.reset()
-        for t in range(1000):
+        while not game.isDone:
             game.run()
-            if game.isDone:
-                break

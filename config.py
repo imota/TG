@@ -6,7 +6,7 @@ class Games(Enum):
     MS_PACMAN = 1
     CART_POLE = 2
 
-game = Games.CART_POLE
+game = Games.MS_PACMAN
 
 action_spaces = {
     Games.ENDURO: [0, 1, 2, 3, 4, 5, 6, 7, 8],

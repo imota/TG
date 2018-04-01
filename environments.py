@@ -22,7 +22,7 @@ class Game(object):
 
     def init_ROS(self):
         rospy.init_node('environment_node', anonymous=True)
-        self.observation_pub = rospy.Publisher(
+        self.pub = rospy.Publisher(
             'observations_topic', String, queue_size=1)
         self.init_actuator()
         self.rate = rospy.Rate(GAME_CONFIG['game_rate'])
@@ -33,11 +33,11 @@ class Game(object):
     def prepare_environment(self, environment_name):
         self.name = environment_name
         self.env = gym.make(self.name)
-        self.isDone = False
         self.reset()
 
     def reset(self):
-        self.observation = self.env.reset()
+        observation = self.env.reset()
+        self.isDone = False
 
     def save_action_callback(self, data):
         self.action = data.data
@@ -46,12 +46,16 @@ class Game(object):
         self.env.render()
         observation, reward, done, info = self.env.step(self.action)
 
-        self.observation = observation
         self.isDone = done
-        self.publish_observation()
+        self.publish(observation, reward)
 
-    def publish_observation(self):
-        self.observation_pub.publish(np.array2string(self.observation))
+    def publish(self, observation, reward):
+        # TODO: publish a matrix
+        obs = [x for x in list(np.array2string(
+            observation)) if x.isdigit()]
+        obs = ''.join(str(e) for e in obs)
+        reward = str(int(reward))
+        self.pub.publish(reward[0] + obs)
 
 
 class Enduro(Game):
@@ -73,7 +77,6 @@ class CartPole(Game):
     def start(self):
         Game.start(self)
         self.prepare_environment('CartPole-v0')
-        print self.env.action_space
 
 games = {
     'Enduro-v0': Enduro(),
