@@ -6,7 +6,7 @@ import numpy as np
 from std_msgs.msg import String, UInt8
 from config import GAME_CONFIG
 
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPRegressor
 
 
 class Policy(object):
@@ -15,19 +15,33 @@ class Policy(object):
         self.action_space = action_space
         self.gamma = 0.618
         self.cummulative_reward = 0
-        # TODO: iniciar a rede neural
-        #   np.zeros([env.observation_space.n, env.action_space.n])
-        self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
-                                 hidden_layer_sizes=(5, 2), random_state=1)
-        # TODO: iniciar o estado inicial self.current_state = 0
+
+        self.clf = MLPRegressor(solver='lbfgs', alpha=1e-5,
+                                hidden_layer_sizes=(5, 2), random_state=1)
+        x_train = np.array([0 for i in range(180)])
+        y_train = np.array([random.random() for i in range(8)])
+        self.clf.fit(x_train.reshape(1, -1), y_train.reshape(1, -1))
 
     def get_action(self, state):
-        return random.choice(self.action_space)
-        # TODO: return np.argmax(Q[state])
+        if state != None:
+            state = [int(x) for x in [state[i] for i in range(180)]]
+            state = np.array(state)
+            action = np.argmax(self.clf.predict(state.reshape(1, -1)))
+            return action
+        return 0
 
     def train_neural_network(self, state, action, reward):
-        # Q[state, action] = (reward + gamma * np.max(Q[state2]))
-        pass
+        if state != None:
+            state = [int(x) for x in [state[i] for i in range(180)]]
+            state = np.array(state)
+            reward_before_training = self.clf.predict(state.reshape(1, -1))
+
+            reward_after_feedback = reward_before_training
+            reward_after_feedback[0][action] = reward + \
+                self.gamma * reward_before_training[0][action]
+
+            self.clf.fit(state.reshape(1, -1),
+                         reward_after_feedback.reshape(1, -1))
 
 
 class Agent(object):
@@ -54,7 +68,7 @@ class Agent(object):
             self.current_state, self.prev_action, reward)
 
         self.cummulative_reward += reward
-        self.current_state = observation
+        self.current_state = observation.data
         self.prev_action = action
 
         self.action_pub.publish(action)
