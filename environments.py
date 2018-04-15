@@ -19,6 +19,7 @@ class Game(object):
     def start(self):
         self.init_ROS()
         self.action = 0
+        self.cummulative_reward = 0
 
     def init_ROS(self):
         rospy.init_node('environment_node', anonymous=True)
@@ -38,6 +39,7 @@ class Game(object):
     def reset(self):
         observation = self.env.reset()
         self.isDone = False
+        self.cummulative_reward = 0
 
     def save_action_callback(self, data):
         self.action = data.data
@@ -46,6 +48,7 @@ class Game(object):
         self.env.render()
         observation, reward, done, info = self.env.step(self.action)
 
+        self.cummulative_reward += reward
         self.isDone = done
         self.publish(observation, reward)
 
@@ -56,6 +59,9 @@ class Game(object):
         obs = ''.join(str(e) for e in obs)
         reward = str(int(reward))
         self.pub.publish(reward[0] + obs)
+
+    def get_cummulative_reward(self):
+        return self.cummulative_reward
 
 
 class Enduro(Game):
