@@ -1,2 +1,0 @@
-tg_package
--DCATKIN_DEVEL_PREFIX=/home/icaro/workspace/TG/devel -DCMAKE_INSTALL_PREFIX=/home/icaro/workspace/TG/install -G Unix Makefiles
