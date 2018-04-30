@@ -59,8 +59,8 @@ class Game(object):
         obs = [x for x in list(np.array2string(
             observation)) if x.isdigit()]
         obs = ''.join(str(e) for e in obs)
-        reward = str(int(reward))
-        message.observation = reward[0] + obs
+        message.observation = obs
+        message.reward = reward
         self.pub.publish(message)
 
     def get_cummulative_reward(self):

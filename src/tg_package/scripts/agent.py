@@ -72,14 +72,14 @@ class Agent(object):
         rospy.spin()
 
     def select_action(self, message):
-        action = self.pi.get_action(message.observation[1:])
-        reward = int(message.observation[0]) * 10
+        action = self.pi.get_action(message.observation)
+        reward = message.reward
 
         self.pi.train_neural_network(
             self.current_state, self.prev_action, reward)
 
         self.cummulative_reward += reward
-        self.current_state = message.observation[1:]
+        self.current_state = message.observation
         self.prev_action = action
 
         self.action_pub.publish(action)
