@@ -1,0 +1,8 @@
+prefix=/home/icaro/workspace/TG/install
+
+Name: TG_package
+Description: Description of TG_package
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/icaro/workspace/TG/install/lib 
+Requires: 
