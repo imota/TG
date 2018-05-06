@@ -51,16 +51,24 @@ class Game(object):
 
         self.cummulative_reward += reward
         self.isDone = done
-        self.publish(observation, reward)
+        self.publish(observation, int(reward))
 
     def publish(self, observation, reward):
         message = observation_msg()
-        # TODO: publish a matrix
-        obs = [x for x in list(np.array2string(
-            observation)) if x.isdigit()]
-        obs = ''.join(str(e) for e in obs)
+        observation = self.clean_observation(observation)
+
+        obs = []
+        for x in np.nditer(observation):
+            obs.append(x)
+
+        if self.isDone:
+            reward = -10
+        print reward
+
         message.observation = obs
         message.reward = reward
+        message.isDone = self.isDone
+
         self.pub.publish(message)
 
     def get_cummulative_reward(self):
@@ -72,6 +80,10 @@ class Enduro(Game):
     def start(self):
         Game.start(self)
         self.prepare_environment('Enduro-v0')
+        self.observation_space = [210, 160, 3]
+
+    def clean_observation(self, observation):
+        return observation[:, :, 0]
 
 
 class MsPacman(Game):
@@ -79,6 +91,10 @@ class MsPacman(Game):
     def start(self):
         Game.start(self)
         self.prepare_environment('MsPacman-v0')
+        self.observation_space = [210, 160, 3]
+
+    def clean_observation(self, observation):
+        return observation[:, :, 0]
 
 
 class CartPole(Game):
@@ -86,6 +102,10 @@ class CartPole(Game):
     def start(self):
         Game.start(self)
         self.prepare_environment('CartPole-v0')
+        self.observation_space = [4]
+
+    def clean_observation(self, observation):
+        return observation
 
 games = {
     'Enduro-v0': Enduro(),

@@ -19,22 +19,21 @@ class Policy(object):
         self.random_factor = 0.9
 
         self.clf = MLPRegressor(solver='lbfgs', alpha=1e-5,
-                                hidden_layer_sizes=(5, 2), random_state=1)
-        x_train = np.array([0 for i in range(180)])
+                                hidden_layer_sizes=(3, 2), random_state=1)
+        x_train = np.array([0 for i in range(4)])
         y_train = np.array([random.randrange(0, 10)
                             for i in range(len(self.action_space))])
         self.clf.fit(x_train.reshape(1, -1), y_train.reshape(1, -1))
 
     def get_random_action(self, probability):
         if self.random_factor > 0.1:
-            self.random_factor = self.random_factor - 0.000003
+            self.random_factor = self.random_factor - 0.00003
             print self.random_factor
         return random.random() < probability
 
     def get_action(self, state):
         if state != None:
             if not self.get_random_action(self.random_factor):
-                state = [int(x) for x in [state[i] for i in range(180)]]
                 state = np.array(state)
                 action = np.argmax(self.clf.predict(state.reshape(1, -1)))
                 return action
@@ -43,7 +42,6 @@ class Policy(object):
 
     def train_neural_network(self, state, action, reward):
         if state != None:
-            state = [float(x) for x in [state[i] for i in range(180)]]
             state = np.array(state)
             reward_before_training = self.clf.predict(state.reshape(1, -1))
 
@@ -82,7 +80,10 @@ class Agent(object):
         self.current_state = message.observation
         self.prev_action = action
 
-        self.action_pub.publish(action)
+        if message.isDone:
+            self.cummulative_reward = 0
+        else:
+            self.action_pub.publish(action)
 
 if __name__ == '__main__':
     agent = Agent()

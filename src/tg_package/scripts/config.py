@@ -6,7 +6,7 @@ class Games(Enum):
     MS_PACMAN = 1
     CART_POLE = 2
 
-game = Games.MS_PACMAN
+game = Games.CART_POLE
 
 action_spaces = {
     Games.ENDURO: [0, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -21,13 +21,7 @@ names = {
 }
 
 GAME_CONFIG = {
-    'game_rate': 10,
+    'game_rate': 33,
     'game_name': names[game],
     'action_space': action_spaces[game]
-}
-
-observation_size = {
-    Games.ENDURO: 162,
-    Games.MS_PACMAN: 180,
-    Games.CART_POLE: 100800
 }

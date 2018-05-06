@@ -1,2 +1,3 @@
-string observation
-uint64 reward
+int64[] observation
+int64 reward
+bool isDone
