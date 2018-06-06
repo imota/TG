@@ -14,15 +14,15 @@ class PolicyOfSingleOutput(object):
 
     def __init__(self, action_space):
         self.action_space = action_space
-        self.gamma = 0.9
-        self.alpha = 0.1
+        self.gamma = 0.618
+        self.alpha = 0.9
         self.state_size = GAME_CONFIG['state_size']
 
         self.initiate_Qfunction()
 
     def initiate_Qfunction(self):
         self.clf = MLPRegressor(solver='lbfgs', alpha=1e-5,
-                                hidden_layer_sizes=(3, 2), random_state=1)
+                                hidden_layer_sizes=(2, 5, 3), random_state=1)
 
         observation_train = np.array([0 for i in range(self.state_size)])
         action_train = np.array([0 for i in range(len(self.action_space))])
@@ -36,7 +36,7 @@ class PolicyOfSingleOutput(object):
             return self.maxQ_action(state)
         return 0
 
-    def maxQ_reward(self, state):
+    def _maxQ(self, state):
         max_action, max_reward = 0, 0
         for action in self.action_space:
             actions_array = np.array(
@@ -49,21 +49,13 @@ class PolicyOfSingleOutput(object):
             if reward >= max_reward:
                 max_action = action
                 max_reward = reward
-        return reward
+        return action, reward
+
+    def maxQ_reward(self, state):
+        return self._maxQ(state)[1]
 
     def maxQ_action(self, state):
-        max_action, max_reward = 0, 0
-        for action in self.action_space:
-            actions_array = np.array(
-                [0 for action in range(len(self.action_space))])
-            actions_array[action] = 1
-
-            input = np.concatenate((state, actions_array), axis=0)
-            reward = self.clf.predict(input.reshape(1, -1))
-            if reward >= max_reward:
-                max_action = action
-                max_reward = reward
-        return action
+        return self._maxQ(state)[0]
 
     def train(self, state, action, reward, next_state):
         if state != None:
@@ -71,6 +63,7 @@ class PolicyOfSingleOutput(object):
             actions_array = np.array(
                 [0 for i in range(len(self.action_space))])
             actions_array[action] = 1
+            print actions_array
 
             input = np.concatenate((state, actions_array), axis=0)
             reward_before_training = self.clf.predict(input.reshape(1, -1))
