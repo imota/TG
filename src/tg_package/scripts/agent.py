@@ -8,6 +8,9 @@ from config import GAME_CONFIG
 from tg_package.msg import observation_msg
 
 from sklearn.neural_network import MLPRegressor
+from keras.models import Sequential
+from keras.layers import Dense, Activation
+from keras import optimizers
 
 
 class PolicyOfSingleOutput(object):
@@ -21,14 +24,21 @@ class PolicyOfSingleOutput(object):
         self.initiate_Qfunction()
 
     def initiate_Qfunction(self):
-        self.clf = MLPRegressor(solver='lbfgs', alpha=1e-5,
-                                hidden_layer_sizes=(2, 5, 3), random_state=1)
 
         observation_train = np.array([0 for i in range(self.state_size)])
         action_train = np.array([0 for i in range(len(self.action_space))])
         x_train = np.concatenate((observation_train, action_train), axis=0)
         y_train = np.array([0.0])
-        self.clf.fit(x_train.reshape(1, -1), y_train)
+
+        self.model = Sequential()
+        self.model.add(Dense(24, input_dim=self.state_size +
+                             len(self.action_space), activation='relu'))
+        self.model.add(Dense(24, activation='relu'))
+        self.model.add(Dense(1, activation='linear'))
+        self.model.compile(loss='mse',
+                           optimizer=optimizers.Adam(lr=self.alpha))
+
+        self.model.fit(x_train.reshape(1, -1), y_train, epochs=1, verbose=0)
 
     def get_action(self, state):
         if state != None:
@@ -44,7 +54,7 @@ class PolicyOfSingleOutput(object):
             actions_array[action] = 1
 
             input = np.concatenate((state, actions_array), axis=0)
-            reward = self.clf.predict(input.reshape(1, -1))
+            reward = self.model.predict(input.reshape(1, -1))
             print action, reward
             if reward >= max_reward:
                 max_action = action
@@ -66,49 +76,15 @@ class PolicyOfSingleOutput(object):
             print actions_array
 
             input = np.concatenate((state, actions_array), axis=0)
-            reward_before_training = self.clf.predict(input.reshape(1, -1))
+            reward_before_training = self.model.predict(input.reshape(1, -1))
 
             reward_after_feedback = reward_before_training
             reward_after_feedback = (1 - self.alpha) * reward_before_training + \
                 self.alpha * (reward + self.gamma *
                               self.maxQ_reward(next_state))
 
-            self.clf.fit(input.reshape(1, -1), reward_after_feedback)
-
-
-class PolicyOfMultipleOutputs(object):
-
-    def __init__(self, action_space):
-        self.action_space = action_space
-        self.gamma = 0.618
-        self.cummulative_reward = 0
-        self.state_size = GAME_CONFIG['state_size']
-
-        self.clf = MLPRegressor(solver='lbfgs', alpha=1e-5,
-                                hidden_layer_sizes=(3, 2), random_state=1)
-        x_train = np.array([0 for i in range(self.state_size)])
-        y_train = np.array([random.randrange(0, 10)
-                            for i in range(len(self.action_space))])
-        self.clf.fit(x_train.reshape(1, -1), y_train.reshape(1, -1))
-
-    def get_action(self, state):
-        if state != None:
-            state = np.array(state)
-            action = np.argmax(self.clf.predict(state.reshape(1, -1)))
-            return action
-        return 0
-
-    def train(self, state, action, reward):
-        if state != None:
-            state = np.array(state)
-            reward_before_training = self.clf.predict(state.reshape(1, -1))
-
-            reward_after_feedback = reward_before_training
-            # NOT Q-LEARNING, JUST UPDATING VALUE FUNCTION.
-            reward_after_feedback[0][action] = reward + \
-                self.gamma * reward_before_training[0][action]
-            self.clf.fit(state.reshape(1, -1),
-                         reward_after_feedback.reshape(1, -1))
+            self.model.fit(input.reshape(1, -1),
+                           reward_after_feedback, epochs=1, verbose=0)
 
 
 class Agent(object):
@@ -134,8 +110,6 @@ class Agent(object):
             self.random_factor = self.random_factor - 0.001  # 0.00003
             # print self.random_factor
         random_action = random.random() < probability
-        # if random_action:
-        # print 'random'
         return random_action
 
     def select_action(self, message):
