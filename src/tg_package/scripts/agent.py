@@ -7,10 +7,28 @@ from std_msgs.msg import UInt8
 from config import GAME_CONFIG
 from tg_package.msg import observation_msg
 
-from sklearn.neural_network import MLPRegressor
-from keras.models import Sequential
-from keras.layers import Dense, Activation
-from keras import optimizers
+import torch
+
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
+
+
+class Net(nn.Module):
+
+    def __init__(self, input_size=(6)):
+        super(Net, self).__init__()
+        self.learning_rate = 0.1
+
+        self.fc1 = nn.Linear(input_size, 200)
+        self.fc2 = nn.Linear(200, 200)
+        self.fc3 = nn.Linear(200, 1)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return F.log_softmax(x)
 
 
 class PolicyOfSingleOutput(object):
@@ -21,24 +39,11 @@ class PolicyOfSingleOutput(object):
         self.alpha = 0.9
         self.state_size = GAME_CONFIG['state_size']
 
-        self.initiate_Qfunction()
+        self.net = Net()
 
-    def initiate_Qfunction(self):
-
-        observation_train = np.array([0 for i in range(self.state_size)])
-        action_train = np.array([0 for i in range(len(self.action_space))])
-        x_train = np.concatenate((observation_train, action_train), axis=0)
-        y_train = np.array([0.0])
-
-        self.model = Sequential()
-        self.model.add(Dense(24, input_dim=self.state_size +
-                             len(self.action_space), activation='relu'))
-        self.model.add(Dense(24, activation='relu'))
-        self.model.add(Dense(1, activation='linear'))
-        self.model.compile(loss='mse',
-                           optimizer=optimizers.Adam(lr=self.alpha))
-
-        self.model.fit(x_train.reshape(1, -1), y_train, epochs=1, verbose=0)
+        self.optimizer = torch.optim.SGD(
+            self.net.parameters(), lr=self.net.learning_rate, momentum=0.9)
+        self.criterion = nn.KLDivLoss()
 
     def get_action(self, state):
         if state != None:
@@ -54,7 +59,8 @@ class PolicyOfSingleOutput(object):
             actions_array[action] = 1
 
             input = np.concatenate((state, actions_array), axis=0)
-            reward = self.model.predict(input.reshape(1, -1))
+            input = Variable(torch.Tensor(input))
+            reward = self.net(input)
             print action, reward
             if reward >= max_reward:
                 max_action = action
@@ -76,15 +82,24 @@ class PolicyOfSingleOutput(object):
             print actions_array
 
             input = np.concatenate((state, actions_array), axis=0)
-            reward_before_training = self.model.predict(input.reshape(1, -1))
+            input = Variable(torch.Tensor(input))
+            input = input.view(-1, 6)
+
+            self.optimizer.zero_grad()
+
+            reward_before_training = self.net(input)
 
             reward_after_feedback = reward_before_training
             reward_after_feedback = (1 - self.alpha) * reward_before_training + \
                 self.alpha * (reward + self.gamma *
                               self.maxQ_reward(next_state))
 
-            self.model.fit(input.reshape(1, -1),
-                           reward_after_feedback, epochs=1, verbose=0)
+            out = Variable(reward_before_training, requires_grad=True)
+            target = Variable(reward_after_feedback)
+            loss = self.criterion(out, target)
+            print out, target
+            loss.backward()
+            self.optimizer.step()
 
 
 class Agent(object):
