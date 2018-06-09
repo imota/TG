@@ -9,8 +9,8 @@ class Games(Enum):
 game = Games.MS_PACMAN
 
 state_sizes = {
-    Games.ENDURO: 100800,
-    Games.MS_PACMAN: 100800,
+    Games.ENDURO: 33600,
+    Games.MS_PACMAN: 33600,
     Games.CART_POLE: 4
 }
 
