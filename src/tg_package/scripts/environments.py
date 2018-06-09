@@ -7,6 +7,7 @@ from rospy.numpy_msg import numpy_msg
 from std_msgs.msg import UInt8
 from config import GAME_CONFIG
 from tg_package.msg import observation_msg
+from skimage import color
 
 
 def get_game():
@@ -95,7 +96,8 @@ class MsPacman(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return observation[:, :, 0]
+        state = color.rgb2gray(observation)
+        return state
 
     def optimize_reward(self, reward):
         if self.isDone:

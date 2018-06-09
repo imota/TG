@@ -62,13 +62,13 @@ class PolicyOfSingleOutput(object):
             actions_array[action] = 1
 
             input = np.concatenate((state, actions_array), axis=0)
-            print "input = " + str(input)
             input = Variable(torch.Tensor(input))
             reward = self.net(input)
-            print action, reward
+            print reward
             if reward >= max_reward:
                 max_action = action
                 max_reward = reward
+        print "----"
         return action, reward
 
     def maxQ_reward(self, state):
@@ -139,6 +139,7 @@ class Agent(object):
         return random.random() < probability
 
     def select_action(self, message):
+        print "random: " + str(self.random_probability * 100) + "%"
         if self.should_select_random_action(self.random_probability):
             print "selecting random action"
             action = random.choice(self.action_space)

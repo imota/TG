@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
         episode_number = 'Episode ' + str(i_episode + 1)
 
-        with open('results_mspacman.csv', 'a') as f:
+        with open('results_mspacman_notraining.csv', 'a') as f:
             reward = game.get_cummulative_reward()
             d = {'Episode': [episode_number], 'Reward': [reward]}
             df = pd.DataFrame(data=d)

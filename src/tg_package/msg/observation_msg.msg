@@ -1,3 +1,3 @@
-int64[] observation
+float64[] observation
 int64 reward
 bool isDone
