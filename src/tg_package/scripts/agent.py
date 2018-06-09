@@ -20,14 +20,17 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.learning_rate = learning_rate
 
-        self.fc1 = nn.Linear(input_size, 5)
+        self.fc1 = nn.Linear(input_size, 500)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(5, 1)
+        self.fc2 = nn.Linear(500, 300)
+        self.fc3 = nn.Linear(300, 1)
 
     def forward(self, x):
         out = self.fc1(x)
         out = self.relu(out)
         out = self.fc2(out)
+        out = self.relu(out)
+        out = self.fc3(out)
         return out
 
 
@@ -120,7 +123,7 @@ class Agent(object):
 
     def __init__(self):
         self.action_space = GAME_CONFIG['action_space']
-        self.pi = PolicyOfSingleOutput(self.action_space)
+        self.pi = RandomPolicy(self.action_space)
         self.prev_action = 0
         self.prev_state = None
         self.random_probability = 0.9
@@ -149,7 +152,9 @@ class Agent(object):
         reward = message.reward
         current_state = message.observation
 
+        print "before traaain"
         self.pi.train(self.prev_state, self.prev_action, reward, current_state)
+        print "after traaain"
 
         if not message.isDone:
             self.action_pub.publish(action)

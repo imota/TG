@@ -36,6 +36,7 @@ class Game(object):
     def prepare_environment(self, environment_name):
         self.name = environment_name
         self.env = gym.make(self.name)
+        print self.env.action_space
         self.reset()
 
     def reset(self):
@@ -85,7 +86,8 @@ class Enduro(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return observation[:, :, 0]
+        state = color.rgb2gray(observation)
+        return state
 
 
 class MsPacman(Game):
@@ -105,6 +107,23 @@ class MsPacman(Game):
         return reward - 1  # discount for taking too long
 
 
+class Breakout(Game):
+
+    def start(self):
+        Game.start(self)
+        self.prepare_environment('Breakout-v0')
+        self.observation_space = [210, 160, 3]
+
+    def clean_observation(self, observation):
+        state = color.rgb2gray(observation)
+        return state
+
+    def optimize_reward(self, reward):
+        if self.isDone:
+            reward = reward - 100
+        return reward
+
+
 class CartPole(Game):
 
     def start(self):
@@ -118,5 +137,6 @@ class CartPole(Game):
 games = {
     'Enduro-v0': Enduro(),
     'MsPacman-v0': MsPacman(),
-    'CartPole-v0': CartPole()
+    'CartPole-v0': CartPole(),
+    'Breakout-v0': Breakout()
 }
