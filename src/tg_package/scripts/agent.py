@@ -18,17 +18,17 @@ class Net(nn.Module):
 
     def __init__(self, input_size=(6)):
         super(Net, self).__init__()
-        self.learning_rate = 0.1
+        self.learning_rate = 0.6
 
         self.fc1 = nn.Linear(input_size, 2)
-        self.fc2 = nn.Linear(2, 5)
-        self.fc3 = nn.Linear(5, 1)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(2, 1)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return F.log_softmax(x)
+        out = self.fc1(x)
+        out = self.relu(out)
+        out = self.fc2(out)
+        return out
 
 
 class PolicyOfSingleOutput(object):
@@ -41,9 +41,9 @@ class PolicyOfSingleOutput(object):
 
         self.net = Net()
 
-        self.optimizer = torch.optim.SGD(
-            self.net.parameters(), lr=self.net.learning_rate, momentum=0.9)
-        self.criterion = nn.KLDivLoss()
+        self.optimizer = torch.optim.Adam(
+            self.net.parameters(), lr=self.net.learning_rate)
+        self.criterion = nn.MSELoss()
 
     def get_best_action(self, state):
         if state != None:
@@ -59,6 +59,7 @@ class PolicyOfSingleOutput(object):
             actions_array[action] = 1
 
             input = np.concatenate((state, actions_array), axis=0)
+            print "input = " + str(input)
             input = Variable(torch.Tensor(input))
             reward = self.net(input)
             print action, reward
@@ -83,7 +84,7 @@ class PolicyOfSingleOutput(object):
 
             input = np.concatenate((state, actions_array), axis=0)
             input = Variable(torch.Tensor(input))
-            #input = input.view(-1, 6)
+            input = input.view(-1, 6)
 
             self.optimizer.zero_grad()
 
@@ -100,6 +101,9 @@ class PolicyOfSingleOutput(object):
             print out, target
             loss.backward()
             self.optimizer.step()
+
+            # for f in self.net.parameters():
+            #    f.data.sub_(f.grad.data * self.net.learning_rate)
 
 
 class Agent(object):
