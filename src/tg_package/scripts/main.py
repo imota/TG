@@ -10,7 +10,7 @@ from tg_package.msg import observation_msg
 if __name__ == '__main__':
     game = environments.get_game()
 
-    for i_episode in range(10000):
+    for i_episode in range(200):
         print 'Episode: ' + str(i_episode)
         game.reset()
         while not game.isDone:

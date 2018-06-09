@@ -16,9 +16,9 @@ from torch.autograd import Variable
 
 class Net(nn.Module):
 
-    def __init__(self, input_size=(6)):
+    def __init__(self, input_size):
         super(Net, self).__init__()
-        self.learning_rate = 0.6
+        self.learning_rate = 0.9
 
         self.fc1 = nn.Linear(input_size, 2)
         self.relu = nn.ReLU()
@@ -35,15 +35,18 @@ class PolicyOfSingleOutput(object):
 
     def __init__(self, action_space):
         self.action_space = action_space
-        self.gamma = 0.618
+        self.gamma = 0.9
         self.alpha = 0.9
         self.state_size = GAME_CONFIG['state_size']
 
-        self.net = Net()
+        self.net = Net(input_size=self.get_input_size())
 
         self.optimizer = torch.optim.Adam(
             self.net.parameters(), lr=self.net.learning_rate)
         self.criterion = nn.MSELoss()
+
+    def get_input_size(self):
+        return self.state_size + len(self.action_space)
 
     def get_best_action(self, state):
         if state != None:
@@ -80,11 +83,10 @@ class PolicyOfSingleOutput(object):
             actions_array = np.array(
                 [0 for i in range(len(self.action_space))])
             actions_array[action] = 1
-            print actions_array
 
             input = np.concatenate((state, actions_array), axis=0)
             input = Variable(torch.Tensor(input))
-            input = input.view(-1, 6)
+            input = input.view(-1, self.get_input_size())
 
             self.optimizer.zero_grad()
 
@@ -98,12 +100,8 @@ class PolicyOfSingleOutput(object):
             out = Variable(reward_before_training, requires_grad=True)
             target = Variable(reward_after_feedback)
             loss = self.criterion(out, target)
-            print out, target
             loss.backward()
             self.optimizer.step()
-
-            # for f in self.net.parameters():
-            #    f.data.sub_(f.grad.data * self.net.learning_rate)
 
 
 class Agent(object):
@@ -125,20 +123,21 @@ class Agent(object):
         rospy.spin()
 
     def should_select_random_action(self, probability):
+        random_discount_factor = 0.0005  # 0.00003
         if self.random_factor > 0.1:
-            self.random_factor = self.random_factor - 0.001  # 0.00003
-            # print self.random_factor
+            self.random_factor = self.random_factor - random_discount_factor
+            print "random factor =" + str(self.random_factor * 100) + "%"
         random_action = random.random() < probability
         return random_action
 
     def select_action(self, message):
         if self.should_select_random_action(self.random_factor):
+            print "selecting random action"
             action = random.choice(self.action_space)
         else:
             action = self.pi.get_best_action(message.observation)
 
         reward = message.reward
-        # print reward
         current_state = message.observation
 
         self.pi.train(self.prev_state, self.prev_action, reward, current_state)
