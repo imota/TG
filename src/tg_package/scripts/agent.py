@@ -46,7 +46,7 @@ class PolicyOfSingleOutput(object):
         self.criterion = nn.MSELoss()
 
     def get_input_size(self):
-        return self.state_size + len(self.action_space)
+        return 33600 + len(self.action_space)
 
     def get_best_action(self, state):
         if state != None:
@@ -123,7 +123,7 @@ class Agent(object):
         rospy.spin()
 
     def should_select_random_action(self, probability):
-        random_discount_factor = 0.0005  # 0.00003
+        random_discount_factor = 0.00003
         if self.random_factor > 0.1:
             self.random_factor = self.random_factor - random_discount_factor
             print "random factor =" + str(self.random_factor * 100) + "%"

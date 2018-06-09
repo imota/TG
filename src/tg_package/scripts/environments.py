@@ -61,18 +61,19 @@ class Game(object):
         for x in np.nditer(observation):
             obs.append(x)
 
-        if self.isDone:
-            reward = -10
-        print reward
-
         message.observation = obs
-        message.reward = reward
+        message.reward = self.optimize_reward(reward)
         message.isDone = self.isDone
 
         self.pub.publish(message)
 
     def get_cummulative_reward(self):
         return self.cummulative_reward
+
+    def optimize_reward(self, reward):
+        if self.isDone:
+            reward = reward - 10
+        return reward  # discount for taking too long
 
 
 class Enduro(Game):
@@ -95,6 +96,11 @@ class MsPacman(Game):
 
     def clean_observation(self, observation):
         return observation[:, :, 0]
+
+    def optimize_reward(self, reward):
+        if self.isDone:
+            reward = reward - 100
+        return reward - 1  # discount for taking too long
 
 
 class CartPole(Game):
