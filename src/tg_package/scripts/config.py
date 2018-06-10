@@ -9,7 +9,7 @@ class Games(Enum):
     PONG = 4
     PINBALL = 5  # NOT WORKING
 
-game = Games.PINBALL
+game = Games.PONG
 
 state_sizes = {
     Games.ENDURO: 33600,

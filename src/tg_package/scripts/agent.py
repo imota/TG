@@ -67,7 +67,7 @@ class PolicyOfSingleOutput(object):
             input = np.concatenate((state, actions_array), axis=0)
             input = Variable(torch.Tensor(input))
             reward = self.net(input)
-            print reward
+            print action, reward
             if reward >= max_reward:
                 max_action = action
                 max_reward = reward
