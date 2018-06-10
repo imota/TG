@@ -123,7 +123,7 @@ class Agent(object):
 
     def __init__(self):
         self.action_space = GAME_CONFIG['action_space']
-        self.pi = RandomPolicy(self.action_space)
+        self.pi = PolicyOfSingleOutput(self.action_space)
         self.prev_action = 0
         self.prev_state = None
         self.random_probability = 0.9
@@ -152,9 +152,7 @@ class Agent(object):
         reward = message.reward
         current_state = message.observation
 
-        print "before traaain"
         self.pi.train(self.prev_state, self.prev_action, reward, current_state)
-        print "after traaain"
 
         if not message.isDone:
             self.action_pub.publish(action)

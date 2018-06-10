@@ -124,6 +124,40 @@ class Breakout(Game):
         return reward
 
 
+class Pong(Game):
+
+    def start(self):
+        Game.start(self)
+        self.prepare_environment('Pong-v0')
+        self.observation_space = [210, 160, 3]
+
+    def clean_observation(self, observation):
+        state = color.rgb2gray(observation)
+        return state
+
+    def optimize_reward(self, reward):
+        if self.isDone:
+            reward = reward - 100
+        return reward
+
+
+class Pinball(Game):
+
+    def start(self):
+        Game.start(self)
+        self.prepare_environment('VideoPinball-v0')
+        self.observation_space = [210, 160, 3]
+
+    def clean_observation(self, observation):
+        state = color.rgb2gray(observation)
+        return state
+
+    def optimize_reward(self, reward):
+        if self.isDone:
+            reward = reward - 100
+        return reward
+
+
 class CartPole(Game):
 
     def start(self):
@@ -138,5 +172,7 @@ games = {
     'Enduro-v0': Enduro(),
     'MsPacman-v0': MsPacman(),
     'CartPole-v0': CartPole(),
-    'Breakout-v0': Breakout()
+    'Breakout-v0': Breakout(),
+    'Pong-v0': Pong(),
+    'VideoPinball-v0': Pinball()
 }
