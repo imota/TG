@@ -82,25 +82,20 @@ class Game(object):
             reward = reward - 10
         return reward  # discount for taking too long
 
+    def compact(self, state, final_height, final_width):
+        state = state.convert('LA')
+        state = state.resize((final_height, final_width), Image.ANTIALIAS)
+        state = np.array(state)[:, :, 0]
 
-def compact(observation, x_final, y_final, name, x_filtered, y_filtered):
-    state = observation
-    state = Image.fromarray(state, 'RGB')
-    state.save(name + '_original.png')
+        return state
 
-    state = np.delete(state, obj=[range(x_filtered, y_filtered)], axis=0)
-    state = Image.fromarray(state, 'RGB')
-    state.save(name + '_filtered.png')
+    def remove_excess(self, img, begin, end, axis):
+        img = np.delete(img, obj=[range(begin, end)], axis=axis)
+        img = Image.fromarray(img, 'RGB')
+        return img
 
-    state = state.convert('LA')
-    state.save(name + '_grayscale.png')
-
-    state = state.resize((x_final, y_final), Image.ANTIALIAS)
-    state.save(name + '_compacted.png')
-
-    state = np.array(state)[:, :, 0]
-
-    return state
+    def get_image(self, state):
+        return Image.fromarray(state, 'RGB')
 
 
 class Enduro(Game):
@@ -111,7 +106,12 @@ class Enduro(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Enduro', 173, 210)
+        state = self.get_image(observation)
+        state = self.remove_excess(state, 161, 210, 0)
+        state = self.remove_excess(state, 0, 51, 0)
+        state = self.remove_excess(state, 140, 160, 1)
+        state = self.remove_excess(state, 0, 35, 1)
+        return self.compact(state, 37, 35)
 
 
 class MsPacman(Game):
@@ -122,7 +122,9 @@ class MsPacman(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 58, 53, 'Pacman', 173, 210)
+        state = self.get_image(observation)
+        state = self.remove_excess(state, 173, 210, 0)
+        return self.compact(state, 58, 53)
 
     def optimize_reward(self, reward):
         if self.isDone:
@@ -138,7 +140,11 @@ class Breakout(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Breakout', 0, 30)
+        state = self.get_image(observation)
+        state = self.remove_excess(state, 0, 30, 0)
+        state = self.remove_excess(state, 155, 160, 1)
+        state = self.remove_excess(state, 0, 5, 1)
+        return self.compact(state, 60, 50)
 
     def optimize_reward(self, reward):
         if self.isDone:
@@ -154,7 +160,10 @@ class Pong(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Pong', 173, 210)
+        state = self.get_image(observation)
+        state = self.remove_excess(state, 194, 210, 0)
+        state = self.remove_excess(state, 0, 34, 0)
+        return self.compact(state, 65, 53)
 
     def optimize_reward(self, reward):
         if self.isDone:

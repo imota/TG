@@ -9,14 +9,14 @@ class Games(Enum):
     PONG = 4
     PINBALL = 5  # NOT WORKING
 
-game = Games.BREAKOUT
+game = Games.PONG
 
 state_sizes = {
-    Games.ENDURO: 3710,
+    Games.ENDURO: 1295,
     Games.MS_PACMAN: 3074,
     Games.CART_POLE: 4,
-    Games.BREAKOUT: 3710,
-    Games.PONG: 3710,
+    Games.BREAKOUT: 3000,
+    Games.PONG: 3445,
     Games.PINBALL: 40000
 }
 
