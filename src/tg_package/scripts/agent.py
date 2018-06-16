@@ -20,16 +20,25 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.learning_rate = learning_rate
 
-        self.fc1 = nn.Linear(input_size, 500)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(500, 300)
-        self.fc3 = nn.Linear(300, 1)
+        self.fc1 = nn.Linear(input_size, 10)
+        self.relu = nn.ReLU()  # POSSIVEL FONTE DE ERRO
+        self.fc2 = nn.Linear(10, 5)
+        self.fc22 = nn.Linear(300, 1000)
+        self.fc23 = nn.Linear(1000, 1000)
+        self.fc24 = nn.Linear(1000, 300)
+        self.fc3 = nn.Linear(5, 1)
 
     def forward(self, x):
         out = self.fc1(x)
         out = self.relu(out)
         out = self.fc2(out)
         out = self.relu(out)
+        #out = self.fc22(out)
+        #out = self.relu(out)
+        #out = self.fc23(out)
+        #out = self.relu(out)
+        #out = self.fc24(out)
+        #out = self.relu(out)
         out = self.fc3(out)
         return out
 
@@ -39,14 +48,14 @@ class PolicyOfSingleOutput(object):
     def __init__(self, action_space):
         self.action_space = action_space
         self.gamma = 0.9
-        self.alpha = 0.9
+        self.alpha = 0.65
         self.state_size = GAME_CONFIG['state_size']
 
-        self.net = Net(input_size=self.get_input_size(), learning_rate=0.9)
+        self.net = Net(input_size=self.get_input_size(), learning_rate=0.5)
 
         self.optimizer = torch.optim.Adam(
             self.net.parameters(), lr=self.net.learning_rate)
-        self.criterion = nn.MSELoss()
+        self.criterion = nn.MSELoss()  # POSSIVEL FONTE DE ERRO
 
     def get_input_size(self):
         return self.state_size + len(self.action_space)
@@ -67,11 +76,11 @@ class PolicyOfSingleOutput(object):
             input = np.concatenate((state, actions_array), axis=0)
             input = Variable(torch.Tensor(input))
             reward = self.net(input)
-            print action, reward
+            # print action, reward
             if reward >= max_reward:
                 max_action = action
                 max_reward = reward
-        print "----"
+        # print "----"
         return action, reward
 
     def maxQ_reward(self, state):
@@ -126,8 +135,8 @@ class Agent(object):
         self.pi = PolicyOfSingleOutput(self.action_space)
         self.prev_action = 0
         self.prev_state = None
-        self.random_probability = 0.9
-        self.random_discount_factor = 0.005
+        self.random_probability = 1.0
+        self.random_discount_factor = 0.0002  # 0.0005
         self.init_ROS()
 
     def init_ROS(self):
@@ -142,9 +151,7 @@ class Agent(object):
         return random.random() < probability
 
     def select_action(self, message):
-        print "random: " + str(self.random_probability * 100) + "%"
         if self.should_select_random_action(self.random_probability):
-            print "selecting random action"
             action = random.choice(self.action_space)
         else:
             action = self.pi.get_best_action(message.observation)
@@ -157,7 +164,9 @@ class Agent(object):
         if not message.isDone:
             self.action_pub.publish(action)
         else:
-            self.random_probability = self.random_probability - self.random_discount_factor
+            print self.random_probability
+            if self.random_probability > 0.05:
+                self.random_probability = self.random_probability - self.random_discount_factor
 
         self.prev_state = current_state
         self.prev_action = action

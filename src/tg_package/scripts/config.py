@@ -9,11 +9,11 @@ class Games(Enum):
     PONG = 4
     PINBALL = 5  # NOT WORKING
 
-game = Games.PONG
+game = Games.MS_PACMAN
 
 state_sizes = {
     Games.ENDURO: 33600,
-    Games.MS_PACMAN: 33600,
+    Games.MS_PACMAN: 3710,
     Games.CART_POLE: 4,
     Games.BREAKOUT: 33600,
     Games.PONG: 33600,
@@ -39,7 +39,7 @@ names = {
 }
 
 GAME_CONFIG = {
-    'game_rate': 33,
+    'game_rate': 500,
     'game_name': names[game],
     'action_space': action_spaces[game],
     'state_size': state_sizes[game]

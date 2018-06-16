@@ -8,6 +8,8 @@ from std_msgs.msg import UInt8
 from config import GAME_CONFIG
 from tg_package.msg import observation_msg
 from skimage import color
+from PIL import Image
+from skimage.transform import resize
 
 
 def get_game():
@@ -36,7 +38,6 @@ class Game(object):
     def prepare_environment(self, environment_name):
         self.name = environment_name
         self.env = gym.make(self.name)
-        print self.env.action_space
         self.reset()
 
     def reset(self):
@@ -46,8 +47,12 @@ class Game(object):
 
     def save_action_callback(self, data):
         self.action = data.data
+        self.game_step()
 
     def run(self):
+        pass
+
+    def game_step(self):
         self.env.render()
         observation, reward, done, info = self.env.step(self.action)
 
@@ -78,6 +83,23 @@ class Game(object):
         return reward  # discount for taking too long
 
 
+def compact(observation, x, y, name):
+    state = observation
+
+    state = Image.fromarray(observation, 'RGB')
+    state.save(name + '_original.png')
+
+    state = state.convert('LA')
+    state.save(name + '_grayscale.png')
+
+    state = state.resize((x, y), Image.ANTIALIAS)
+    state.save(name + '_compacted.png')
+
+    state = np.array(state)[:, :, 0]
+
+    return state
+
+
 class Enduro(Game):
 
     def start(self):
@@ -86,8 +108,7 @@ class Enduro(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        state = color.rgb2gray(observation)
-        return state
+        return compact(observation, 70, 53, 'Enduro')
 
 
 class MsPacman(Game):
@@ -98,8 +119,7 @@ class MsPacman(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        state = color.rgb2gray(observation)
-        return state
+        return compact(observation, 70, 53, 'Pacman')
 
     def optimize_reward(self, reward):
         if self.isDone:
@@ -115,8 +135,7 @@ class Breakout(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        state = color.rgb2gray(observation)
-        return state
+        return compact(observation, 70, 53, 'Breakout')
 
     def optimize_reward(self, reward):
         if self.isDone:
@@ -132,13 +151,12 @@ class Pong(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        state = color.rgb2gray(observation)
-        return state
+        return compact(observation, 70, 53, 'Pong')
 
     def optimize_reward(self, reward):
         if self.isDone:
             reward = reward - 100
-        return reward
+        return reward - 1
 
 
 class Pinball(Game):
