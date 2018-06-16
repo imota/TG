@@ -100,8 +100,6 @@ def compact(observation, x_final, y_final, name, x_filtered, y_filtered):
 
     state = np.array(state)[:, :, 0]
 
-    img = a
-
     return state
 
 
