@@ -83,19 +83,24 @@ class Game(object):
         return reward  # discount for taking too long
 
 
-def compact(observation, x, y, name):
+def compact(observation, x_final, y_final, name, x_filtered, y_filtered):
     state = observation
-
-    state = Image.fromarray(observation, 'RGB')
+    state = Image.fromarray(state, 'RGB')
     state.save(name + '_original.png')
+
+    state = np.delete(state, obj=[range(x_filtered, y_filtered)], axis=0)
+    state = Image.fromarray(state, 'RGB')
+    state.save(name + '_filtered.png')
 
     state = state.convert('LA')
     state.save(name + '_grayscale.png')
 
-    state = state.resize((x, y), Image.ANTIALIAS)
+    state = state.resize((x_final, y_final), Image.ANTIALIAS)
     state.save(name + '_compacted.png')
 
     state = np.array(state)[:, :, 0]
+
+    img = a
 
     return state
 
@@ -108,7 +113,7 @@ class Enduro(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Enduro')
+        return compact(observation, 70, 53, 'Enduro', 173, 210)
 
 
 class MsPacman(Game):
@@ -119,7 +124,7 @@ class MsPacman(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Pacman')
+        return compact(observation, 58, 53, 'Pacman', 173, 210)
 
     def optimize_reward(self, reward):
         if self.isDone:
@@ -135,7 +140,7 @@ class Breakout(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Breakout')
+        return compact(observation, 70, 53, 'Breakout', 0, 30)
 
     def optimize_reward(self, reward):
         if self.isDone:
@@ -151,7 +156,7 @@ class Pong(Game):
         self.observation_space = [210, 160, 3]
 
     def clean_observation(self, observation):
-        return compact(observation, 70, 53, 'Pong')
+        return compact(observation, 70, 53, 'Pong', 173, 210)
 
     def optimize_reward(self, reward):
         if self.isDone:

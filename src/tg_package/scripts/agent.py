@@ -23,9 +23,6 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(input_size, 10)
         self.relu = nn.ReLU()  # POSSIVEL FONTE DE ERRO
         self.fc2 = nn.Linear(10, 5)
-        self.fc22 = nn.Linear(300, 1000)
-        self.fc23 = nn.Linear(1000, 1000)
-        self.fc24 = nn.Linear(1000, 300)
         self.fc3 = nn.Linear(5, 1)
 
     def forward(self, x):
@@ -33,12 +30,6 @@ class Net(nn.Module):
         out = self.relu(out)
         out = self.fc2(out)
         out = self.relu(out)
-        #out = self.fc22(out)
-        #out = self.relu(out)
-        #out = self.fc23(out)
-        #out = self.relu(out)
-        #out = self.fc24(out)
-        #out = self.relu(out)
         out = self.fc3(out)
         return out
 
