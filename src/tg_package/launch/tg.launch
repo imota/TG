@@ -1,6 +1,0 @@
-<launch>
-
-  <node name="environment_node" pkg="tg_package" type="environment_node"/>
-  <node name="agent_node" pkg="tg_package" type="agent_node"/>
-
-</launch>
