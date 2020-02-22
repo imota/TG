@@ -12,12 +12,6 @@ app.config['MYSQL_DB'] = 'tg_rl_openai_atari'
 
 mysql = MySQL(app)
 
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
 @app.errorhandler(404)
 def page_not_found(e):
     return "<h1>404</h1><p>The resource could not be found.</p>", 404
@@ -49,26 +43,30 @@ def api_filter():
     id = query_parameters.get('id')
     name = query_parameters.get('name')
 
-    query = "SELECT * FROM books WHERE"
+    query = "SELECT * FROM games WHERE"
     to_filter = []
 
     if id:
-        query += ' id=? AND'
+        query += ' id=(%s) AND'
         to_filter.append(id)
     if name:
-        query += ' name=? AND'
+        query += ' name=(%s) AND'
         to_filter.append(name)
     if not (id or name):
         return page_not_found(404)
 
     query = query[:-4] + ';'
 
-    conn = sqlite3.connect('books.db')
-    conn.row_factory = dict_factory
-    cur = conn.cursor()
-
-    results = cur.execute(query, to_filter).fetchall()
-
-    return jsonify(results)
+    try:
+        games = []
+        cur = mysql.connection.cursor()
+        cur.execute(query, to_filter)
+        mysql.connection.commit()
+        games = cur.fetchall()
+        cur.close()
+        return jsonify(games)
+    except Exception as e:
+        print(e)
+        return e
 
 app.run()
